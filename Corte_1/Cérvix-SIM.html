@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cérvix-SIM · Simulador educativo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f7f6;--surf:#fff;--ink:#14262b;--mut:#5a6f74;--line:#d5e0df;--acc:#0f6b6b;--acc-ink:#fff;--ok:#1b7a4b;--bad:#b3392f;--warn-bg:#fff3d6;--warn-ink:#5c4300;--ai:#e6eefb;--ai-ink:#1d3a73;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1a1d;--surf:#162a2e;--ink:#e7f0ef;--mut:#9bb2b5;--line:#2a4448;--acc:#4fc3bd;--acc-ink:#062124;--ok:#5fd08e;--bad:#ff8b7d;--warn-bg:#3a2f0c;--warn-ink:#ffe39a;--ai:#1c2b4a;--ai-ink:#bcd0ff}}
+:root[data-theme="dark"]{--bg:#0e1a1d;--surf:#162a2e;--ink:#e7f0ef;--mut:#9bb2b5;--line:#2a4448;--acc:#4fc3bd;--acc-ink:#062124;--ok:#5fd08e;--bad:#ff8b7d;--warn-bg:#3a2f0c;--warn-ink:#ffe39a;--ai:#1c2b4a;--ai-ink:#bcd0ff}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "IBM Plex Sans",system-ui,sans-serif}
+h1,h2,h3{font-family:"Source Serif 4",Georgia,serif;line-height:1.15;margin:0 0 .5em}
+h1{font-size:clamp(2rem,6vw,3.2rem)}h2{font-size:1.6rem}h3{font-size:1.15rem}
+.warn{background:var(--warn-bg);color:var(--warn-ink);padding:.6rem 1rem;font-size:.88rem;text-align:center}
+header{display:flex;justify-content:space-between;align-items:center;padding:.8rem 1.2rem;border-bottom:1px solid var(--line);background:var(--surf)}
+.logo{font-family:"Source Serif 4",serif;font-weight:700;font-size:1.25rem;color:var(--acc)}
+main{max-width:1000px;margin:0 auto;padding:1.5rem 1.2rem 3rem}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:1.2rem}
+.grid{display:grid;gap:1.2rem}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.lead{font-size:1.1rem;color:var(--mut);max-width:60ch}
+button,select,input[type=file]{font:inherit}
+.btn{background:var(--acc);color:var(--acc-ink);border:0;border-radius:8px;padding:.7rem 1.2rem;font-weight:600;cursor:pointer}
+.btn.sec{background:transparent;color:var(--acc);border:1.5px solid var(--acc)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,select:focus-visible,input:focus-visible,.opt:focus-within{outline:3px solid var(--acc);outline-offset:2px}
+.row{display:flex;gap:.7rem;flex-wrap:wrap;align-items:center}
+.stage{background:#1a1114;border-radius:10px;overflow:hidden;display:flex;justify-content:center;align-items:center;min-height:260px}
+.stage img{max-width:100%;max-height:420px;display:block}
+.ai{background:var(--ai);color:var(--ai-ink);border-radius:10px;padding:1rem}
+.ai b{display:block;margin-bottom:.2rem}
+.bar{height:8px;background:rgba(127,127,127,.25);border-radius:4px;overflow:hidden;margin:.4rem 0}
+.bar i{display:block;height:100%;background:currentColor}
+.opt{display:flex;gap:.6rem;align-items:center;border:1.5px solid var(--line);border-radius:8px;padding:.65rem .8rem;margin:.4rem 0;cursor:pointer}
+.opt:has(input:checked){border-color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,transparent)}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+.stat b{font:700 2.2rem "Source Serif 4",serif;display:block}
+.stat small{color:var(--mut)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;padding:.5rem .6rem;border-bottom:1px solid var(--line)}
+.item{display:grid;grid-template-columns:80px 1fr;gap:.8rem;align-items:center;padding:.6rem 0;border-bottom:1px solid var(--line)}
+.item img{width:80px;height:80px;object-fit:cover;border-radius:6px}
+.item select{width:100%;margin:.15rem 0;padding:.3rem;background:var(--surf);color:var(--ink);border:1px solid var(--line);border-radius:6px}
+.hide{display:none}
+.note{font-size:.86rem;color:var(--mut)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+</style>
+</head>
+<body>
+<div class="warn" role="note">Entorno de simulación educativo. No es una herramienta de diagnóstico y ninguno de sus casos debe usarse para decisiones clínicas.</div>
+<header><span class="logo">Cérvix-SIM</span><button class="btn sec" id="theme" type="button">Cambiar tema</button></header>
+<main id="app"></main>
+
+<script>
+const CLS=[{k:"normal",t:"Normal",d:"Epitelio rosado y uniforme, sin áreas acetoblancas ni vasos atípicos."},
+{k:"pre",t:"Lesión precancerosa",d:"Área acetoblanca de bordes definidos, con puntillado o mosaico fino."},
+{k:"ca",t:"Sospecha de cáncer",d:"Superficie irregular y friable, con vasos atípicos y áreas necróticas."}];
+const T=k=>CLS.find(c=>c.k===k);
+let cases=[],cur=0,log=[],picked=null;
+
+/* Casos de demostración: ilustraciones sintéticas, no son imágenes clínicas reales */
+function synth(kind,s){
+  let extra="";
+  if(kind==="pre")extra=`<path d="M${150+s*8} 120 q60 -30 90 20 q20 50 -40 70 q-60 10 -60 -40z" fill="#f6e9e4" opacity=".9"/><g stroke="#b8505f" stroke-width="2" opacity=".7"><path d="M170 140h10M185 150h10M200 140h10M175 165h10M195 170h10"/></g>`;
+  if(kind==="ca")extra=`<path d="M140 110 q70 -50 120 10 q30 60 -30 95 q-70 20 -90 -40z" fill="#e9d3c9"/><g stroke="#7a1020" stroke-width="2.5" fill="none"><path d="M160 130q20 20 5 45M200 120q-10 30 25 50M230 140q-25 5 -10 40M180 180q30 -10 45 10"/></g><circle cx="205" cy="150" r="10" fill="#8a2030"/>`;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320"><defs><radialGradient id="g" cx="50%" cy="50%" r="55%"><stop offset="0" stop-color="#e8909a"/><stop offset="1" stop-color="#b85463"/></radialGradient></defs><rect width="400" height="320" fill="#1a1114"/><ellipse cx="200" cy="160" rx="${170-s*4}" ry="${135-s*3}" fill="url(#g)"/>${extra}<ellipse cx="${200-s*3}" cy="${170+s*2}" rx="14" ry="9" fill="#5a1a26"/></svg>`;
+  return "data:image/svg+xml;utf8,"+encodeURIComponent(svg);
+}
+function demo(){
+  const d=[["normal","normal",88],["pre","pre",81],["ca","pre",79],["normal","normal",90],["ca","ca",85],["pre","normal",77],["pre","pre",72],["ca","ca",91]];
+  return d.map(([truth,ai,conf],i)=>({img:synth(truth,i%5),truth,ai,conf,demo:true}));
+}
+
+const $=(s)=>document.querySelector(s);
+const app=$("#app");
+function show(html){app.innerHTML=html;window.scrollTo(0,0)}
+
+function home(){
+  show(`<h1>Aprende a interpretar el cuello uterino junto a una IA, sin confiar a ciegas.</h1>
+  <p class="lead">Cérvix-SIM te presenta casos con imágenes, una sugerencia de un agente tutor y te pide decidir. Al final verás cuánto aciertas y cuánto te dejas llevar por la IA cuando se equivoca.</p>
+  <div class="row" style="margin:1.2rem 0 2rem"><button class="btn" id="b1" type="button">Practicar con casos de demostración</button><button class="btn sec" id="b2" type="button">Cargar mis imágenes</button></div>
+  <div class="grid g2">
+   <div class="card"><h3>Cómo funciona</h3><p>1. Observas la imagen del caso.<br>2. Lees la sugerencia del tutor.<br>3. Eliges tu decisión y qué tan seguro estás.<br>4. Recibes retroalimentación y, al final, tus métricas.</p></div>
+   <div class="card"><h3>Qué se mide</h3><p><b>Exactitud de decisión</b>, <b>detección de errores</b> de la IA y <b>sesgo de automatización (AOR)</b>: la proporción de veces que sigues a la IA cuando está equivocada.</p></div>
+  </div>`);
+  $("#b1").onclick=()=>start(demo());
+  $("#b2").onclick=setup;
+}
+
+function setup(){
+  cases=[];
+  show(`<h2>Carga tus casos</h2>
+  <p class="lead">Sube imágenes de un banco público y anonimizado. Todo se procesa en tu navegador: las imágenes se reducen y se re-codifican, lo que elimina los metadatos EXIF.</p>
+  <div class="card"><input type="file" id="f" accept="image/*" multiple aria-label="Seleccionar imágenes">
+  <p class="note">Para cada imagen indica el diagnóstico de referencia y la sugerencia que dará la IA.</p><div id="list"></div>
+  <div class="row" style="margin-top:1rem"><button class="btn" id="go" type="button" disabled>Iniciar simulación</button><button class="btn sec" id="back" type="button">Volver</button></div></div>`);
+  $("#back").onclick=home;
+  $("#f").onchange=async e=>{
+    for(const file of e.target.files){
+      try{cases.push({img:await clean(file),truth:"normal",ai:"normal",conf:80})}
+      catch(_){alert("No se pudo cargar "+file.name+". Usa un archivo de imagen válido.")}
+    }
+    draw();
+  };
+  $("#go").onclick=()=>start(cases);
+}
+function clean(file){return new Promise((res,rej)=>{
+  const u=URL.createObjectURL(file),im=new Image();
+  im.onload=()=>{const r=Math.min(1,800/Math.max(im.width,im.height)),c=document.createElement("canvas");
+    c.width=im.width*r;c.height=im.height*r;c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+    URL.revokeObjectURL(u);res(c.toDataURL("image/jpeg",.85))};
+  im.onerror=rej;im.src=u})}
+function draw(){
+  const opts=v=>CLS.map(c=>`<option value="${c.k}" ${c.k===v?"selected":""}>${c.t}</option>`).join("");
+  $("#list").innerHTML=cases.map((c,i)=>`<div class="item"><img src="${c.img}" alt="Caso ${i+1}"><div>
+   <label class="note">Diagnóstico de referencia<select data-i="${i}" data-f="truth">${opts(c.truth)}</select></label>
+   <label class="note">Sugerencia de la IA<select data-i="${i}" data-f="ai">${opts(c.ai)}</select></label></div></div>`).join("");
+  document.querySelectorAll("#list select").forEach(s=>s.onchange=()=>{cases[s.dataset.i][s.dataset.f]=s.value});
+  $("#go").disabled=!cases.length;
+}
+
+function start(list){
+  cases=list.slice().sort(()=>Math.random()-.5);cur=0;log=[];play();
+}
+
+function play(){
+  const c=cases[cur],ai=T(c.ai);picked=null;
+  show(`<p class="note">Caso ${cur+1} de ${cases.length}</p>
+  <div class="grid g2">
+   <div><div class="stage"><img src="${c.img}" alt="Imagen del cuello uterino del caso ${cur+1}"></div>
+   ${c.demo?'<p class="note">Ilustración sintética de demostración, no es una imagen clínica real.</p>':""}</div>
+   <div>
+    <div class="ai"><b>Agente tutor</b>Sugiere: <strong>${ai.t}</strong>
+     <div class="bar" aria-hidden="true"><i style="width:${c.conf}%"></i></div>Confianza de la IA: ${c.conf}%
+     <p style="margin:.5rem 0 0">${ai.d}</p></div>
+    <div class="card" style="margin-top:1rem" id="dec"><h3>Tu decisión</h3>
+     ${CLS.map(x=>`<label class="opt"><input type="radio" name="d" value="${x.k}"> ${x.t}</label>`).join("")}
+     <label for="cf">Tu seguridad: <b id="cv">50</b>%</label><input type="range" id="cf" min="0" max="100" value="50">
+     <button class="btn" id="ok" type="button" disabled style="margin-top:.8rem">Confirmar decisión</button></div>
+    <div id="fb"></div>
+   </div></div>`);
+  document.querySelectorAll("input[name=d]").forEach(r=>r.onchange=()=>{picked=r.value;$("#ok").disabled=false});
+  $("#cf").oninput=e=>$("#cv").textContent=e.target.value;
+  $("#ok").onclick=confirm_;
+}
+
+function confirm_(){
+  const c=cases[cur],conf=+$("#cf").value;
+  const r={truth:c.truth,ai:c.ai,user:picked,conf,ok:picked===c.truth,aiOk:c.ai===c.truth};
+  log.push(r);
+  document.querySelectorAll("#dec input").forEach(x=>x.disabled=true);$("#ok").classList.add("hide");
+  let msg=r.ok?`<b class="ok">Correcto.</b> La referencia es ${T(c.truth).t.toLowerCase()}.`:`<b class="bad">No coincide.</b> La referencia es ${T(c.truth).t.toLowerCase()}.`;
+  let aiMsg=r.aiOk?"La IA acertó en este caso.":(picked===c.ai?"La IA se equivocó y la seguiste. Este es el patrón que mide el sesgo de automatización.":"La IA se equivocó y tú no la seguiste.");
+  $("#fb").innerHTML=`<div class="card" style="margin-top:1rem"><p>${msg}</p><p>${aiMsg}</p><p class="note">Pista de revisión: ${T(c.truth).d}</p>
+   <button class="btn" id="nx" type="button">${cur+1<cases.length?"Siguiente caso":"Ver resultados"}</button></div>`;
+  $("#nx").onclick=()=>{cur++;cur<cases.length?play():results()};
+  $("#nx").focus();
+}
+
+function pct(a,b){return b?Math.round(100*a/b):null}
+function results(){
+  const n=log.length,acc=pct(log.filter(r=>r.ok).length,n);
+  const aiW=log.filter(r=>!r.aiOk),aor=pct(aiW.filter(r=>r.user===r.ai).length,aiW.length);
+  const det=pct(aiW.filter(r=>r.ok).length,aiW.length);
+  const mc=Math.round(log.reduce((s,r)=>s+r.conf,0)/n),gap=mc-acc;
+  const f=v=>v===null?"—":v+"%";
+  const cal=gap>10?"Sobreconfianza: tu seguridad supera tu exactitud.":gap<-10?"Subconfianza: aciertas más de lo que crees.":"Buena calibración: tu seguridad se parece a tu exactitud.";
+  const tip=aor===null?"La IA no se equivocó en ningún caso de esta sesión.":aor>=50?"Seguiste a la IA en la mayoría de sus errores. Antes de aceptar una sugerencia, contrástala con lo que ves en la imagen.":"Detectaste buena parte de los errores de la IA. Sigue contrastando cada sugerencia con la imagen.";
+  show(`<h2>Tus resultados</h2>
+  <div class="stats">
+   <div class="card stat"><b>${f(acc)}</b><small>Exactitud de decisión</small></div>
+   <div class="card stat"><b>${f(det)}</b><small>Errores de la IA detectados (${aiW.length} casos)</small></div>
+   <div class="card stat"><b>${f(aor)}</b><small>Sesgo de automatización (AOR)</small></div>
+   <div class="card stat"><b>${mc}%</b><small>Seguridad promedio</small></div>
+  </div>
+  <div class="card" style="margin:1.2rem 0"><h3>Retroalimentación del tutor</h3><p>${tip}</p><p>${cal}</p></div>
+  <div class="card tbl"><h3>Detalle por caso</h3><table><thead><tr><th>Caso</th><th>Referencia</th><th>IA</th><th>Tu decisión</th><th>Seguridad</th></tr></thead><tbody>
+  ${log.map((r,i)=>`<tr><td>${i+1}</td><td>${T(r.truth).t}</td><td class="${r.aiOk?"ok":"bad"}">${T(r.ai).t}</td><td class="${r.ok?"ok":"bad"}">${T(r.user).t}</td><td>${r.conf}%</td></tr>`).join("")}</tbody></table></div>
+  <div class="row" style="margin-top:1.2rem"><button class="btn" id="again" type="button">Repetir</button><button class="btn sec" id="hm" type="button">Inicio</button></div>
+  <p class="note">Estas métricas son solo para aprendizaje e investigación académica.</p>`);
+  $("#again").onclick=()=>start(cases);$("#hm").onclick=home;
+}
+
+$("#theme").onclick=()=>{
+  const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;
+  r.dataset.theme=dark?"light":"dark";
+};
+home();
+</script>
+</body>
+</html>
