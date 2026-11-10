@@ -1,25 +1,63 @@
 # Cérvix-SIM
-Ecosistema web de simulación gamificada con Agente Tutor IA, enfocado en el estudio de casos clínicos de cáncer de cuello uterino y la evaluación del sesgo de automatización (AOR).
 
-# Descripción del Proyecto
-Cérvix-SIM es una iniciativa tecnológica y académica diseñada para evaluar la dinámica de toma de decisiones y la interacción humano-IA en el entorno médico. La plataforma integra casos clínicos basados en imágenes médicas 100% anonimizadas con un motor de escenarios interactivos y un Agente Tutor Inteligente.
+Simulador académico de interpretación de imágenes cervicales con un **Agente Tutor IA** para medir la calibración de la confianza y la sobredependencia de la automatización (AOR). Proyecto de Gestión de Proyectos TI, Universidad Santiago de Cali.
 
-El objetivo principal de este ecosistema no es emitir diagnósticos médicos reales (SaMD), sino funcionar como una herramienta de investigación educativa para medir métricas críticas como la Exactitud de Decisión, la tasa de detección de errores algorítmicos y el Sesgo de Automatización (AOR) de los usuarios frente a la Inteligencia Artificial.
+> **Advertencia:** entorno de simulación de aprendizaje. No apto para diagnóstico médico real. Todos los casos son esquemas sintéticos; no hay datos de pacientes.
 
-# Equipo de Trabajo (Grupo 404)
-Este proyecto es desarrollado por un equipo de ingenieros de sistemas en formación, operando bajo una estructura de roles formal:
+## Arquitectura (resumen)
+Cliente-servidor en capas con backend modular (ver `docs/Arquitectura_del_Sistema_Cervix-SIM_v2.0.docx`).
 
-Juan David Uribe Enciso | Director de Proyecto: Encargado de la gestión administrativa, dirección operativa bajo el marco PMBOK (6ta Edición), control de cambios y administración del cronograma.
+| Capa / patrón | Dónde está |
+|---|---|
+| Presentación (SPA estática, JS puro) | `frontend/` |
+| API (Starlette) | `backend/cervix_sim/api.py` |
+| Lógica de negocio | `backend/cervix_sim/service.py`, `domain/` |
+| Factory (escenario por nivel) | `domain/factory.py` |
+| Singleton (cliente del tutor) | `tutor.py` |
+| Observer (métricas y telemetría asíncronas) | `domain/events.py`, `telemetry.py` |
+| Datos (MongoDB o memoria) | `store.py` |
+| Banco de casos (UC-06/UC-08) | `cervix_sim/data/cases.json`, `tools/validate_cases.py` |
 
-Juan Pablo Ruiz | Analista de Sistemas: Responsable de la ingeniería de requisitos bajo la norma ISO/IEC/IEEE 29148, gestión de los conjuntos de datos clínicos anonimizados y mitigación de riesgos operativos.
+Decisiones clave: el backend es el único intermediario con el tutor y **nunca envía al navegador** la referencia docente ni la condición de la sugerencia hasta que se registra la decisión; si el tutor falla o tarda más de 10 s se responde con un texto de respaldo (degradación controlada); el participante se identifica con un id seudónimo y los datos de contacto se guardan aparte.
 
-Daniel Andrés Rodríguez | Desarrollador: Encargado del diseño de la arquitectura web, implementación de microservicios, conexión con la API del Agente Tutor y desarrollo del frontend 3D.
+## Ejecutar en local
+Requisitos: Python 3.10+.
+```bash
+cd backend
+pip install -r requirements.txt          # añade requirements-mongo.txt para MongoDB
+TUTOR_MODE=mock python -m cervix_sim     # http://127.0.0.1:8000
+```
+La misma aplicación sirve el frontend. Variables en `.env.example` (`MONGODB_URI`, `TUTOR_MODE=auto|ollama|mock`, `OLLAMA_URL`, `ADMIN_TOKEN`, `ALLOWED_ORIGINS`...). Sin `MONGODB_URI` los datos se guardan en memoria (se pierden al reiniciar).
 
-Juan Pablo Ortiz | Tester (Probador): Responsable del control de calidad, planes de prueba, evaluación de usabilidad (escala SUS) y gestión de la densidad de defectos.
+Tutor real: instala [Ollama](https://ollama.com), `ollama pull llama3` y usa `TUTOR_MODE=auto`.
 
-Santiago Berdugo | Miembro del Equipo: Apoyo en validación y aprobación de entregables técnicos.
+## Pruebas
+```bash
+cd backend && python -m unittest discover -s tests -t .   # backend (45 pruebas)
+python -m cervix_sim.tools.validate_cases                 # valida el banco de casos
+node e2e/run_e2e.mjs                                      # extremo a extremo (requiere playwright)
+```
 
+## API
+`GET /api/health`, `GET /api/legal`, `POST /api/sessions`, `GET /api/sessions/{id}/scenario`, `POST /api/sessions/{id}/tutor`, `POST /api/sessions/{id}/decision`, `GET /api/sessions/{id}/results`, `POST /api/sessions/{id}/sus`, `GET /api/admin/summary` (cabecera `X-Admin-Token`).
 
-# Gobernanza Institucional:
+## Despliegue gratuito
+- Backend: Render (comando `cd backend && python -m cervix_sim`, `HOST=0.0.0.0`), base en MongoDB Atlas free.
+- Frontend aparte (opcional): Vercel/GitHub Pages; edita `frontend/config.js` con la URL del backend y define `ALLOWED_ORIGINS`.
+- `Dockerfile` y `docker-compose.yml` incluidos (no probados en el entorno de desarrollo).
 
-Propietario del Proyecto (PP): Jair Enrique Sanclemente Castro.
+## Limitaciones conocidas
+- Los casos y sus referencias son sintéticos y **requieren validación del docente** antes de usarse en el estudio.
+- La definición operativa del AOR (seguir sugerencias inexactas / sugerencias inexactas mostradas) debe confirmarse con el docente.
+- Cada sesión presenta un caso; el panel agregado sólo está disponible vía el endpoint de administración.
+- Starlette se usa en lugar de FastAPI y el frontend es JS puro (sin React) por restricciones de instalación del entorno de desarrollo; migrar es sencillo porque la lógica está separada de la API.
+
+## Subir a GitHub
+```bash
+git init && git add . && git commit -m "Cérvix-SIM v1.0"
+git branch -M main
+git remote add origin https://github.com/<usuario>/cervix-sim.git
+git push -u origin main
+```
+
+Equipo: Juan David Uribe Enciso (líder), Juan Pablo Ruiz Meneses, Daniel Andrés Rodríguez Castro, Juan Pablo Ortiz Ramírez, Santiago Meneses Berdugo. Docente: Jair Enrique Sanclemente Castro.
