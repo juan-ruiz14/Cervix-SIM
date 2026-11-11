@@ -1,0 +1,6 @@
+{
+  "name": "cervix-sim-frontend",
+  "private": true,
+  "type": "module",
+  "description": "Frontend estático de Cérvix-SIM (JavaScript puro, sin paso de compilación)"
+}
