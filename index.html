@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cérvix-SIM - Entorno Clínico</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding: 20px; }
+        .contenedor { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .visor-3d { height: 300px; background-color: #343a40; color: white; display: flex; align-items: center; justify-content: center; border-radius: 4px; margin-bottom: 20px; }
+        .panel-controles { display: flex; gap: 10px; margin-bottom: 20px; }
+        button { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; }
+        .btn-accion { background-color: #0d6efd; }
+        .btn-ia { background-color: #6f42c1; }
+        .btn-telemetria { background-color: #198754; }
+        #consola { background: #e9ecef; padding: 10px; border-radius: 4px; font-family: monospace; min-height: 80px; }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+    <h2 style="color: #333;">Simulador Cérvix-SIM (Caso CS-01)</h2>
+    
+    <!-- Aquí irá el motor de Three.js más adelante -->
+    <div class="visor-3d">
+        [Renderizador 3D / 2D WebGL inactivo]
+    </div>
+
+    <div class="panel-controles">
+        <button class="btn-accion" onclick="registrarAccion()">Tomar Muestra (Acción)</button>
+        <button class="btn-ia" onclick="consultarTutor()">Consultar IA Tutor</button>
+        <button class="btn-telemetria" onclick="enviarTelemetria()">Finalizar y Guardar (AOR)</button>
+    </div>
+
+    <h4>Registro de Actividad (Consola):</h4>
+    <div id="consola">Esperando inicialización...</div>
+</div>
+
+<script>
+    // URL base de tu backend (FastAPI)
+    const API_URL = "http://localhost:8000";
+    const consola = document.getElementById('consola');
+
+    function log(mensaje) {
+        consola.innerHTML += `<div>> ${mensaje}</div>`;
+        consola.scrollTop = consola.scrollHeight;
+    }
+
+    // 1. Mitigación Riesgo R1: Despertar el servidor al cargar la página
+    window.onload = async () => {
+        try {
+            log("Inicializando conexión con el servidor...");
+            const res = await fetch(`${API_URL}/api/salud`);
+            const data = await res.json();
+            log(`Servidor Backend: ${data.status} - ${data.message}`);
+        } catch (error) {
+            log("<span style='color: red;'>Error: Backend no responde. Asegúrate de encender uvicorn.</span>");
+        }
+    };
+
+    // 2. IO1: Enviar Acción Clínica
+    async function registrarAccion() {
+        log("Registrando acción clínica...");
+        const payload = { id_accion: "ACT-001", parametros_caso: { herramienta: "hisopo" }, tiempo_respuesta_ms: 1200 };
+        
+        const res = await fetch(`${API_URL}/api/simulacion/accion`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        log(`Acción: ${data.retroalimentacion}`);
+    }
+
+    // 3. IO2: Consultar al Agente Tutor (Con degradación controlada)
+    async function consultarTutor() {
+        log("Consultando al Agente Tutor IA (Llama 3)...");
+        const payload = { vector_estado: { etapa_actual: "inspeccion_visual", hallazgos: "lesion_blanca" } };
+        
+        try {
+            const res = await fetch(`${API_URL}/api/tutor/evaluar`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            
+            if (res.status === 503) {
+                log("<span style='color: orange;'>Tutor IA ocupado o caído. Continúa con reglas base (Degradación controlada activa).</span>");
+                return;
+            }
+            
+            const data = await res.json();
+            log(`<b>Tutor IA dice:</b> ${data.sugerencia}`);
+        } catch (error) {
+            log("<span style='color: red;'>Error de red al consultar IA.</span>");
+        }
+    }
+
+    // 4. IO3: Guardar Telemetría Asíncrona (Observer)
+    async function enviarTelemetria() {
+        log("Enviando telemetría AOR en segundo plano...");
+        const payload = { aor_metrica: 0.85, sus_score: 90, id_sesion: "SESION-001" };
+        
+        fetch(`${API_URL}/api/telemetria/guardar`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        
+        log("<span style='color: green;'>¡Métricas guardadas exitosamente sin bloquear la pantalla!</span>");
+    }
+</script>
+
+</body>
+</html>
