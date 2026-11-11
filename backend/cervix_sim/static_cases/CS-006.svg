@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-labelledby="t d">
+<title id="t">Esquema cervical sintético CS-006</title>
+<desc id="d">Ilustración didáctica generada por el equipo de Cérvix-SIM. No es una imagen clínica.</desc>
+<defs><filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter></defs>
+<rect width="800" height="800" fill="#0B1220"/>
+<circle cx="400" cy="400" r="340" fill="none" stroke="#3B4A63" stroke-width="2"/>
+<circle cx="400" cy="400" r="305" fill="#4A5B78"/>
+<circle cx="400" cy="400" r="255" fill="#93A4BF" opacity="0.85"/>
+<circle cx="400" cy="400" r="190" fill="#46566F" stroke="#C9D3E3" stroke-width="2" stroke-dasharray="6 6"/>
+
+<ellipse cx="400" cy="400" rx="58" ry="20" fill="#0B1220"/>
+<g fill="#9FB0CB" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">
+<text x="400" y="38">12</text><text x="770" y="408">3</text><text x="400" y="780">6</text><text x="30" y="408">9</text></g>
+<text x="24" y="780" fill="#7D8DA8" font-family="Arial, sans-serif" font-size="16" text-anchor="start">ESQUEMA SINTÉTICO · NO CLÍNICO</text>
+</svg>

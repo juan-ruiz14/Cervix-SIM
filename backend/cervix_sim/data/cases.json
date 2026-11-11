@@ -1,0 +1,139 @@
+{
+  "version": "0.1.0",
+  "nota": "Esquemas 2D sintéticos con fines didácticos. Las referencias y justificaciones deben ser validadas por el docente antes de usarse en evaluaciones.",
+  "cases": [
+    {
+      "id": "CS-001",
+      "level": "basico",
+      "title": "Evaluación de un esquema sin lesión",
+      "modality": "Esquema 2D sintético",
+      "image": "CS-001.svg",
+      "reference": "NORMAL",
+      "findings": [
+        "Distribución uniforme del contraste en toda la superficie.",
+        "No se observan áreas de contraste localizadas.",
+        "Los bordes de las zonas concéntricas son regulares."
+      ],
+      "rationale": "No hay un área de contraste localizada y la superficie se ve uniforme, por eso la referencia es «sin lesión».",
+      "source": "Generado por el equipo de Cérvix-SIM (sin datos de pacientes)",
+      "license": "Uso académico, creación propia",
+      "anonymized": true,
+      "synthetic": true,
+      "version": "0.1.0"
+    },
+    {
+      "id": "CS-002",
+      "level": "basico",
+      "title": "Evaluación de una lesión cervical",
+      "modality": "Esquema 2D sintético",
+      "image": "CS-002.svg",
+      "reference": "HSIL",
+      "findings": [
+        "Hay un área de contraste densa en el cuadrante superior.",
+        "Los bordes del área se ven irregulares.",
+        "El contraste es más intenso que el de la zona vecina."
+      ],
+      "rationale": "El área es densa, intensa y de bordes irregulares, rasgos que en este esquema se asocian con una lesión de alto grado.",
+      "source": "Generado por el equipo de Cérvix-SIM (sin datos de pacientes)",
+      "license": "Uso académico, creación propia",
+      "anonymized": true,
+      "synthetic": true,
+      "version": "0.1.0"
+    },
+    {
+      "id": "CS-003",
+      "level": "intermedio",
+      "title": "Evaluación de una lesión cervical",
+      "modality": "Esquema 2D sintético",
+      "image": "CS-003.svg",
+      "reference": "LSIL",
+      "findings": [
+        "Hay un área de contraste tenue con bordes difusos.",
+        "El contraste es menos denso que el de la zona vecina.",
+        "La alteración ocupa una porción pequeña del campo."
+      ],
+      "rationale": "El área es tenue, de bordes difusos y poco extensa, rasgos que en este esquema se asocian con una lesión de bajo grado.",
+      "source": "Generado por el equipo de Cérvix-SIM (sin datos de pacientes)",
+      "license": "Uso académico, creación propia",
+      "anonymized": true,
+      "synthetic": true,
+      "version": "0.1.0"
+    },
+    {
+      "id": "CS-004",
+      "level": "intermedio",
+      "title": "Evaluación de una lesión cervical",
+      "modality": "Esquema 2D sintético",
+      "image": "CS-004.svg",
+      "reference": "HSIL",
+      "findings": [
+        "Hay un área de contraste densa y delimitada.",
+        "Los bordes del área son irregulares.",
+        "El contraste destaca frente al resto del campo."
+      ],
+      "rationale": "La densidad del área y la irregularidad de sus bordes sustentan una lesión de alto grado en este esquema.",
+      "source": "Generado por el equipo de Cérvix-SIM (sin datos de pacientes)",
+      "license": "Uso académico, creación propia",
+      "anonymized": true,
+      "synthetic": true,
+      "version": "0.1.0"
+    },
+    {
+      "id": "CS-005",
+      "level": "avanzado",
+      "title": "Evaluación de una lesión cervical",
+      "modality": "Esquema 2D sintético",
+      "image": "CS-005.svg",
+      "reference": "LSIL",
+      "findings": [
+        "Hay un área de contraste tenue.",
+        "Los bordes son difusos.",
+        "El área es pequeña respecto al campo."
+      ],
+      "rationale": "Contraste tenue, bordes difusos y área pequeña corresponden, en este esquema, a una lesión de bajo grado.",
+      "source": "Generado por el equipo de Cérvix-SIM (sin datos de pacientes)",
+      "license": "Uso académico, creación propia",
+      "anonymized": true,
+      "synthetic": true,
+      "version": "0.1.0"
+    },
+    {
+      "id": "CS-006",
+      "level": "avanzado",
+      "title": "Evaluación de un esquema sin lesión",
+      "modality": "Esquema 2D sintético",
+      "image": "CS-006.svg",
+      "reference": "NORMAL",
+      "findings": [
+        "El contraste es uniforme.",
+        "No hay áreas localizadas.",
+        "Los bordes son regulares."
+      ],
+      "rationale": "No hay alteraciones localizadas. La referencia es «sin lesión».",
+      "source": "Generado por el equipo de Cérvix-SIM (sin datos de pacientes)",
+      "license": "Uso académico, creación propia",
+      "anonymized": true,
+      "synthetic": true,
+      "version": "0.1.0"
+    },
+    {
+      "id": "CS-007",
+      "level": "avanzado",
+      "title": "Evaluación de una lesión cervical",
+      "modality": "Esquema 2D sintético",
+      "image": "CS-007.svg",
+      "reference": "HSIL",
+      "findings": [
+        "Hay un área de contraste intensa.",
+        "Los bordes son irregulares.",
+        "El área es extensa."
+      ],
+      "rationale": "El área intensa, extensa y de bordes irregulares sustenta una lesión de alto grado en este esquema.",
+      "source": "Generado por el equipo de Cérvix-SIM (sin datos de pacientes)",
+      "license": "Uso académico, creación propia",
+      "anonymized": true,
+      "synthetic": true,
+      "version": "0.1.0"
+    }
+  ]
+}
