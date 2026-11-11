@@ -1,0 +1,20 @@
+services:
+  mongo:
+    image: mongo:7
+    volumes: [mongo_data:/data/db]
+  app:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      MONGODB_URI: mongodb://mongo:27017
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-cambia-este-token}
+      TUTOR_MODE: ${TUTOR_MODE:-mock}
+      OLLAMA_URL: http://ollama:11434
+    depends_on: [mongo]
+  ollama:           # opcional: docker compose --profile ia up
+    profiles: [ia]
+    image: ollama/ollama
+    volumes: [ollama_data:/root/.ollama]
+volumes:
+  mongo_data:
+  ollama_data:
