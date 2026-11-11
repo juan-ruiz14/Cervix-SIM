@@ -1,0 +1,3 @@
+# Opcional: almacén MongoDB / MongoDB Atlas (decisión D6)
+-r requirements.txt
+pymongo>=4.6
