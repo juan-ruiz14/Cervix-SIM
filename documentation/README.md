@@ -1,34 +1,20 @@
-# Pagina 1
+# Cérvix-SIM
 
-## Cérvix-SIM&#x20;
+**Simulador académico de interpretación de imágenes cervicales asistido por un Agente Tutor IA**, diseñado para medir la calibración de la confianza y la sobredependencia de la automatización (*Automation Over-reliance Rate* — **AOR**).
 
-> **Ecosistema web de simulación gamificada con Agente Tutor IA, enfocado en el estudio de casos clínicos de cáncer de cuello uterino y la evaluación del Sesgo de Automatización (AOR).**
+> **Advertencia Ética y Académica:** Este software es un entorno exclusivo de simulación para aprendizaje. **No es apto para diagnóstico médico real.** Todos los casos clínicos utilizados son esquemas sintéticos y no contienen datos de pacientes reales.
 
-***
+## Propósito del Proyecto
+* Evaluar el criterio diagnóstico de estudiantes frente a sugerencias generadas por Inteligencia Artificial (incluyendo sugerencias inexactas controladas para medir el índice AOR).
+* Garantizar la validez metodológica mediante el aislamiento de la referencia docente hasta que el participante registre su decisión definitiva.
+* Medir la usabilidad percibida de la plataforma mediante el cuestionario estándar **SUS** (*System Usability Scale*).
 
-### &#x20;    Estado Actual del Proyecto
-
-* **Fase:** Diseño, Análisis de Requisitos y Planificación (Pre-construcción).
-* **Estado de Desarrollo:** Sin implementación de código fuente activo; arquitectura y especificaciones documentadas bajo enfoque _Docs as Code_.
-* **Presupuesto Asignado:** $0 COP (Infraestructura basada en capas gratuitas).
-
-***
-
-### &#x20;Descripción y Alcance
-
-**Cérvix-SIM** es una plataforma académica y de investigación diseñada para analizar la interacción humano-IA y la toma de decisiones en entornos médicos simulados. El sistema integra casos clínicos basados en imágenes médicas **100% anonimizadas** con escenarios gamificados y un Agente Tutor Inteligente.
-
-> **Delimitación Clínica (No SaMD):** Este ecosistema **no** es un Software como Dispositivo Médico (SaMD) ni emite diagnósticos reales. Su propósito es estrictamente educativo y experimental para medir la Exactitud de Decisión, la detección de errores algorítmicos y el **Sesgo de Automatización (AOR)** de los usuarios frente a las recomendaciones de la IA.
-
-***
-
-### Gobernanza y Equipo (Grupo 404)
-
-| Nivel       | Rol en el Proyecto            | Integrante                          | Marco / Responsabilidad Principal                                                                |
-| ----------- | ----------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------ |
-| **Nivel 1** | Propietario del Proyecto (PP) | **Jair Enrique Sanclemente Castro** | Gobernanza institucional, aprobación de alcance y evaluación.                                    |
-| **Nivel 2** | Director de Proyecto          | **Juan David Uribe Enciso**         | Dirección administrativa bajo **PMBOK (6ta Ed.)**, cronograma y control de cambios.              |
-| **Nivel 3** | Analista de Sistemas          | **Juan Pablo Ruiz**                 | Ingeniería de requisitos (**ISO 29148**), gestión de datasets y mitigación de riesgos (**TSP**). |
-| **Nivel 3** | Desarrollador                 | **Daniel Andrés Rodríguez**         | Arquitectura web, microservicios, integración API del Tutor IA y frontend 3D.                    |
-| **Nivel 3** | Tester (Calidad)              | **Juan Pablo Ortiz**                | Plan de pruebas, control de defectos y evaluación de usabilidad (**SUS**).                       |
-| **Nivel 3** | Apoyo Técnico                 | **Santiago B.**                     | Validación de entregables y soporte en aseguramiento técnico.                                    |
+## Información Académica y Equipo
+* **Institución:** Universidad Santiago de Cali — Gestión de Proyectos TI.
+* **Docente:** Jair Enrique Sanclemente Castro.
+* **Equipo de Desarrollo:**
+  * **Juan David Uribe Enciso** — Líder de Proyecto
+  * **Juan Pablo Ruiz Meneses** — Desarrollo / Análisis de Sistemas
+  * **Daniel Andrés Rodríguez Castro** — Desarrollo / Arquitectura
+  * **Juan Pablo Ortiz Ramírez** — Desarrollo / Pruebas
+  * **Santiago Meneses Berdugo** — Desarrollo / Documentación
