@@ -25,8 +25,8 @@ log = logging.getLogger("cervix_sim.tutor")
 # de modo que el texto no delata la condición.
 LABEL_CUES = {
     "NORMAL": "no observo áreas de contraste anormales y la distribución se ve uniforme",
-    "LSIL": "el área señalada es tenue y sus bordes se ven difusos",
-    "HSIL": "el área señalada es densa y sus bordes se ven irregulares",
+    "LSIL": "la zona alterada es tenue y sus bordes se ven difusos",
+    "HSIL": "la zona alterada es extensa y sus bordes se ven irregulares",
 }
 
 
@@ -42,9 +42,9 @@ def fallback_text(label: str, message: Optional[str] = None) -> str:
     cue = LABEL_CUES[label]
     if message:
         return (f"Sobre tu consulta: mantengo mi hipótesis de «{name}», porque {cue}. "
-                "Contrasta esa idea con la distribución y los bordes del área señalada antes de decidir.")
+                "Contrasta esa idea con la distribución y los bordes de la superficie antes de decidir.")
     return (f"Mi hipótesis inicial es «{name}», porque {cue}. "
-            "Contrasta esta sugerencia con los bordes y la densidad del área señalada. "
+            "Contrasta esta sugerencia con los bordes y el relieve de la superficie al girar el modelo. "
             "¿Qué hallazgos apoyan tu decisión?")
 
 
@@ -90,10 +90,10 @@ class TutorClient:
     def _ask_ollama(self, title: str, level: str, label: str, message: Optional[str]) -> str:
         name, cue = OPTIONS[label], LABEL_CUES[label]
         prompt = (
-            "Eres un tutor educativo de un simulador académico sobre imágenes esquemáticas del cuello uterino. "
+            "Eres un tutor educativo de un simulador académico sobre modelos 3D didácticos del cuello uterino. "
             "No emites diagnósticos y esto no es una herramienta médica. Responde en español, en máximo 3 frases, "
             f"con tono amable. Sostén esta hipótesis: «{name}», apoyándote en que {cue}. "
-            "Termina invitando al estudiante a contrastar la sugerencia con la evidencia de la imagen.\n"
+            "Termina invitando al estudiante a contrastar la sugerencia con la evidencia del modelo.\n"
             f"Caso: {title} (nivel {level}).\n"
         )
         if message:
