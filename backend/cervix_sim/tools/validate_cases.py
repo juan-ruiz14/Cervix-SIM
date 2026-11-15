@@ -1,8 +1,7 @@
-"""Validación del banco de casos antes de publicarlo (UC-06, UC-08, Req 005, R-04).
+"""Validación del banco de casos 3D antes de publicarlo (UC-06, UC-08, Req 005, R-04).
 
 Uso (desde backend/):
-    python -m cervix_sim.tools.validate_cases            # solo revisa
-    python -m cervix_sim.tools.validate_cases --strip    # además limpia EXIF de imágenes raster (requiere pillow)
+    python -m cervix_sim.tools.validate_cases
 Sale con código 1 si encuentra problemas.
 """
 from __future__ import annotations
@@ -16,21 +15,20 @@ from typing import List
 
 from ..domain.cases import LEVELS, OPTIONS
 
-REQUIRED = ("id", "level", "title", "modality", "image", "reference", "findings", "rationale",
-            "source", "license", "anonymized", "version")
-RASTER = {".png", ".jpg", ".jpeg", ".webp"}
-SVG_FORBIDDEN = re.compile(r"<script|\son\w+\s*=|javascript:|href\s*=\s*[\"']https?:", re.I)
+REQUIRED = ("id", "title", "modality", "model", "reference", "ia_veredicto", "ia_condicion", "findings",
+            "rationale", "source", "license", "anonymized", "version")
 SEMVER = re.compile(r"^\d+\.\d+\.\d+$")
+GLB_MAGIC = b"glTF"
+MAX_GLB_MB = 25  # límite de subida por la web de GitHub
 
 
-def validate_bank(cases_file: Path, images_dir: Path, strip: bool = False) -> List[str]:
+def validate_bank(cases_file: Path, models_dir: Path) -> List[str]:
     problems: List[str] = []
     try:
         data = json.loads(Path(cases_file).read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         return [f"No se pudo leer {cases_file}: {exc}"]
-    seen = set()
-    levels_found = set()
+    seen, by_id = set(), {}
     for item in data.get("cases", []):
         cid = item.get("id", "<sin id>")
         missing = [k for k in REQUIRED if k not in item]
@@ -40,11 +38,15 @@ def validate_bank(cases_file: Path, images_dir: Path, strip: bool = False) -> Li
         if cid in seen:
             problems.append(f"{cid}: id duplicado")
         seen.add(cid)
-        if item["level"] not in LEVELS:
-            problems.append(f"{cid}: nivel no válido «{item['level']}»")
-        levels_found.add(item["level"])
+        by_id[cid] = item
         if item["reference"] not in OPTIONS:
             problems.append(f"{cid}: referencia no válida «{item['reference']}»")
+        if item["ia_veredicto"] not in OPTIONS:
+            problems.append(f"{cid}: veredicto del tutor no válido «{item['ia_veredicto']}»")
+        if item["ia_condicion"] not in ("calibrada", "inexacta"):
+            problems.append(f"{cid}: condición del tutor no válida «{item['ia_condicion']}»")
+        elif (item["ia_veredicto"] == item["reference"]) != (item["ia_condicion"] == "calibrada"):
+            problems.append(f"{cid}: la condición del tutor no coincide con su veredicto y la referencia")
         if item["anonymized"] is not True:
             problems.append(f"{cid}: el caso no está marcado como anonimizado")
         if not str(item["license"]).strip() or not str(item["source"]).strip():
@@ -53,48 +55,39 @@ def validate_bank(cases_file: Path, images_dir: Path, strip: bool = False) -> Li
             problems.append(f"{cid}: versión «{item['version']}» no sigue x.y.z")
         if not item["findings"] or not all(isinstance(f, str) and f.strip() for f in item["findings"]):
             problems.append(f"{cid}: pistas vacías o no válidas")
-        img = Path(images_dir) / item["image"]
-        if not img.is_file():
-            problems.append(f"{cid}: no existe la imagen {item['image']}")
-            continue
-        ext = img.suffix.lower()
-        if ext == ".svg":
-            if SVG_FORBIDDEN.search(img.read_text(encoding="utf-8", errors="ignore")):
-                problems.append(f"{cid}: el SVG contiene scripts, eventos o enlaces externos")
-        elif ext in RASTER:
-            problems.extend(_check_raster(cid, img, strip))
+        glb = Path(models_dir) / item["model"]
+        if glb.suffix.lower() != ".glb":
+            problems.append(f"{cid}: el modelo debe ser un archivo .glb")
+        elif not glb.is_file():
+            problems.append(f"{cid}: no existe el modelo {item['model']}")
         else:
-            problems.append(f"{cid}: formato de imagen no permitido «{ext}»")
+            if glb.read_bytes()[:4] != GLB_MAGIC:
+                problems.append(f"{cid}: {item['model']} no es un GLB válido")
+            if glb.stat().st_size > MAX_GLB_MB * 1024 * 1024:
+                problems.append(f"{cid}: {item['model']} supera {MAX_GLB_MB} MB")
+    seqs = data.get("secuencias", {})
     for level in LEVELS:
-        if level not in levels_found:
-            problems.append(f"No hay casos para el nivel «{level}»")
+        seq = seqs.get(level)
+        if not seq:
+            problems.append(f"No hay secuencia para el nivel «{level}»")
+            continue
+        if len(seq) != len(set(seq)):
+            problems.append(f"{level}: la secuencia repite casos")
+        unknown = [c for c in seq if c not in by_id]
+        if unknown:
+            problems.append(f"{level}: casos desconocidos {unknown}")
+            continue
+        inexact = [c for c in seq if by_id[c].get("ia_condicion") == "inexacta"]
+        if len(inexact) != 1:
+            problems.append(f"{level}: debe haber exactamente 1 sugerencia inexacta del tutor (hay {len(inexact)})")
     return problems
-
-
-def _check_raster(cid: str, img: Path, strip: bool) -> List[str]:
-    try:
-        from PIL import Image
-    except ImportError:
-        return [f"{cid}: instala pillow para revisar metadatos de {img.name} (pip install -r requirements-tools.txt)"]
-    with Image.open(img) as im:
-        has_meta = bool(im.getexif()) or any(k in im.info for k in ("exif", "icc_profile", "xmp"))
-        if not has_meta:
-            return []
-        if not strip:
-            return [f"{cid}: {img.name} contiene metadatos (EXIF/XMP). Ejecuta con --strip"]
-        clean = Image.new(im.mode, im.size)
-        clean.putdata(list(im.getdata()))
-    clean.save(img)
-    return []
 
 
 def main(argv=None) -> int:
     from ..config import Settings
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--strip", action="store_true", help="eliminar metadatos de imágenes raster")
-    args = parser.parse_args(argv)
+    argparse.ArgumentParser(description=__doc__.splitlines()[0]).parse_args(argv)
     s = Settings()
-    problems = validate_bank(Path(s.cases_file), Path(s.cases_images_dir), strip=args.strip)
+    problems = validate_bank(Path(s.cases_file), Path(s.models_dir))
     if problems:
         print("Problemas encontrados:")
         for p in problems:

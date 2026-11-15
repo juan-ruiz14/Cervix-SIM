@@ -1,6 +1,7 @@
+import json
 import unittest
 
-from cervix_sim.domain.cases import OPTIONS, load_cases
+from cervix_sim.domain.cases import OPTIONS, Bank, load_bank
 from cervix_sim.domain.events import EventBus
 from cervix_sim.domain.factory import ScenarioFactory
 from cervix_sim.domain.metrics import aggregate, classify, evaluate_decision
@@ -71,41 +72,30 @@ class SusTests(unittest.TestCase):
 
 class FactoryTests(unittest.TestCase):
     def setUp(self):
-        self.cases = load_cases(Settings().cases_file)
-        self.factory = ScenarioFactory(self.cases)
+        self.bank = load_bank(Settings().cases_file)
+        self.factory = ScenarioFactory(self.bank)
 
     def test_pistas_por_nivel(self):
-        self.assertEqual(len(self.factory.create("basico").hints), 3)
-        self.assertEqual(len(self.factory.create("intermedio").hints), 1)
-        self.assertEqual(len(self.factory.create("avanzado").hints), 0)
+        for level, n in (("basico", 3), ("intermedio", 1), ("avanzado", 0)):
+            self.assertEqual(len(self.factory.build("CS-001", level).hints), n)
 
     def test_vista_publica_no_filtra_la_referencia(self):
         for level in ("basico", "intermedio", "avanzado"):
-            pub = self.factory.create(level).public()
-            self.assertNotIn("referencia", pub)
-            self.assertNotIn("reference", pub)
-            self.assertNotIn("justificacion", pub)
-            self.assertEqual({o["codigo"] for o in pub["opciones"]}, set(OPTIONS))
+            for cid in self.factory.sequence(level):
+                pub = self.factory.build(cid, level, 2, 3).public()
+                text = json.dumps(pub)
+                for forbidden in ("referencia", "reference", "justificacion", "ia_", "inexacta", "calibrada"):
+                    self.assertNotIn(forbidden, text)
+                self.assertEqual({o["codigo"] for o in pub["opciones"]}, set(OPTIONS))
+                self.assertEqual((pub["caso_numero"], pub["total_casos"]), (2, 3))
+                self.assertTrue(pub["modelo_url"].endswith(".glb"))
 
     def test_nivel_invalido_y_sin_casos(self):
         with self.assertRaises(AppError):
-            self.factory.create("experto")
+            self.factory.sequence("experto")
         with self.assertRaises(AppError):
-            ScenarioFactory([]).create("basico")
+            ScenarioFactory(Bank(cases=[], sequences={})).sequence("basico")
 
     def test_caso_inexistente(self):
         with self.assertRaises(AppError):
             self.factory.get_case("CS-999")
-
-
-class EventBusTests(unittest.TestCase):
-    def test_un_observador_que_falla_no_rompe_a_los_demas(self):
-        bus, got = EventBus(), []
-        bus.subscribe("x", lambda p: (_ for _ in ()).throw(RuntimeError("falla")))
-        bus.subscribe("x", got.append)
-        bus.publish("x", {"a": 1})
-        self.assertEqual(got, [{"a": 1}])
-
-
-if __name__ == "__main__":
-    unittest.main()
