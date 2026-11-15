@@ -29,7 +29,7 @@ export function renderInicio(state, actions) {
       submit.disabled = false;
     }
   } },
-    h('div', { class: 'card-head' }, h('h2', {}, 'Prepara tu sesión'), h('span', { class: 'muted small' }, 'Duración estimada: 5 min')),
+    h('div', {}, h('h2', {}, 'Prepara tu sesión'), h('p', { class: 'muted small' }, 'Un espacio seguro para aprender a decidir.')),
     field('Nombre', nombre, 'nombre'),
     field('Rol (Estudiante/Profesional)', rol, 'rol'),
     field('Correo', correo, 'correo'),
@@ -39,10 +39,11 @@ export function renderInicio(state, actions) {
         'Entiendo que el tutor de IA puede dar sugerencias incorrectas y que, al finalizar, se me indicará si fue así.')),
     errorSlot, submit);
 
-  return h('main', { class: 'page narrow' },
-    h('section', { class: 'hero' },
+  return h('main', { class: 'page narrow enter', tabindex: '-1' },
+    h('button', { type: 'button', class: 'btn link', onclick: actions.onBack }, icon('back', 16), h('span', {}, 'Volver a la portada')),
+    h('section', { class: 'hero stagger' },
       h('p', { class: 'eyebrow' }, 'APRENDIZAJE CLÍNICO ASISTIDO POR IA'),
-      h('h1', {}, 'Entrena tu criterio. Decide con evidencia.'),
-      h('p', { class: 'lead' }, 'Explora un caso simulado de patología cervical y reflexiona sobre la influencia de la IA en tus decisiones.')),
-    form);
+      h('h1', { class: 'h1-sm' }, 'Entrena tu criterio. Decide con evidencia.')),
+    form,
+    h('p', { class: 'form-foot' }, icon('shield', 14), h('span', {}, 'Datos sintéticos. Aprendizaje sin riesgo para pacientes.')));
 }

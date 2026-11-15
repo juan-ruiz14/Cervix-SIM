@@ -38,5 +38,7 @@ export const getScenario = (sid) => request('GET', `/api/sessions/${sid}/scenari
 export const askTutor = (sid, mensaje) => request('POST', `/api/sessions/${sid}/tutor`, mensaje ? { mensaje } : {});
 export const registerDecision = (sid, decision, confianza) =>
   request('POST', `/api/sessions/${sid}/decision`, { decision, confianza });
+export const nextCase = (sid) => request('POST', `/api/sessions/${sid}/next`);
 export const getResults = (sid) => request('GET', `/api/sessions/${sid}/results`);
 export const submitSus = (sid, respuestas) => request('POST', `/api/sessions/${sid}/sus`, { respuestas });
+export const sendComment = (sid, texto) => request('POST', `/api/sessions/${sid}/comment`, { texto });
