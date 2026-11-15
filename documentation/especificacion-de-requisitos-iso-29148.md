@@ -1,25 +1,25 @@
-# Especificación de Requisitos (ISO 29148)
+# Especificación de Requisitos de Software (ISO/IEC/IEEE 29148)
 
-## Especificación de Requisitos (ISO/IEC/IEEE 29148)&#x20;
+Este documento resume los requisitos funcionales, no funcionales y restricciones del sistema **Cérvix-SIM**, trazados con la Matriz MoSCoW y los Casos de Uso del proyecto.
 
-El levantamiento y documentación de requisitos de **Cérvix-SIM** se rige por el estándar internacional **ISO/IEC/IEEE 29148**, garantizando que todas las reglas técnicas y éticas queden definidas antes de iniciar la fase de codificación.
+## 1. Actores del Sistema
+* **Participante (Estudiante):** Realiza el flujo completo de simulación, interactúa con el visor 3D, consulta al tutor IA, emite su diagnóstico y responde la encuesta SUS.
+* **Docente / Investigador:** Consulta los indicadores agregados de calibración de confianza, índice AOR y usabilidad mediante el endpoint administrativo protegido.
+* **Agente Tutor IA (Ollama / Mock):** Provee recomendaciones textuales contextualizadas al escenario clínico sin exponer directamente la etiqueta docente.
 
-***
+## 2. Requisitos Funcionales (RF)
 
-### Requisitos Funcionales (RF)
+| ID | Requisito | Prioridad (MoSCoW) | Descripción |
+| :--- | :--- | :--- | :--- |
+| **RF-01** | Gestión de Sesión Seudónima | Must Have | El sistema debe permitir iniciar una sesión previa aceptación del aviso legal, generando un identificador seudónimo único sin vincular datos personales al historial clínico simulado. |
+| **RF-02** | Visualización de Escenario 3D | Must Have | El sistema debe cargar un caso sintético desde el banco validado y permitir su exploración interactiva en el visor 3D (`model3d.js`). |
+| **RF-03** | Consulta al Agente Tutor IA | Must Have | El participante podrá solicitar asistencia al tutor IA durante la evaluación del caso, recibiendo una sugerencia controlada por el backend. |
+| **RF-04** | Registro de Decisión y Confianza | Must Have | El sistema debe registrar el diagnóstico seleccionado por el usuario y su porcentaje/nivel de confianza antes de liberar la retroalimentación docente. |
+| **RF-05** | Retroalimentación y Encuesta SUS | Should Have | Tras decidir, el sistema mostrará la comparación entre la decisión del estudiante, la sugerencia de la IA y la referencia docente, habilitando el cuestionario SUS. |
+| **RF-06** | Resumen Agregado Docente | Should Have | El sistema debe exponer un resumen estadístico de sesiones, precisión, calibración y AOR autenticado mediante `X-Admin-Token`. |
 
-| ID        | Requisito                          | Descripción Técnica                                                                                                                                                                                       | Prioridad |
-| --------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
-| **RF-01** | **Simulación de Casos Clínicos**   | El sistema debe presentar casos clínicos interactivos de cuello uterino con soporte visual y mecánicas de gamificación.                                                                                   | Alta      |
-| **RF-02** | **Agente Tutor Inteligente**       | Integración de un agente basado en IA capaz de ofrecer sugerencias, pistas y retroalimentación contextual durante la evaluación del caso.                                                                 | Alta      |
-| **RF-03** | **Medición de Sesgo (AOR)**        | La plataforma debe registrar la decisión inicial del usuario y su decisión final tras recibir la sugerencia de la IA para calcular la Exactitud de Decisión y el índice de Sesgo de Automatización (AOR). | Crítica   |
-| **RF-04** | **Gestión de Sesiones y Métricas** | Almacenamiento estructurado de los tiempos de respuesta y tasas de acierto por cada escenario completado.                                                                                                 | Media     |
-
-***
-
-### &#x20;   Requisitos No Funcionales (RNF) y Restricciones
-
-* **RNF-01 | Privacidad y Anonimización de Datos:** Todos los conjuntos de datos (_datasets_) e imágenes médicas empleadas en el simulador deben estar **100% anonimizados**, eliminando cualquier metadato o identificador de pacientes reales.
-* **RNF-02 | Restricción Presupuestal ($0 COP):** La arquitectura completa (alojamiento, base de datos y consumo de modelos IA) debe operar con un costo de **$0 COP**, utilizando exclusivamente servicios en la nube de capa gratuita.
-* **RNF-03 | Usabilidad (Escala SUS):** Una vez construido el prototipo funcional, la interfaz será evaluada mediante el cuestionario estándar **SUS (**_**System Usability Scale**_**)** para validar su facilidad de uso.
-* **RNF-04 | Rendimiento y Optimización:** Las imágenes clínicas cargadas en el navegador deben estar optimizadas para evitar tiempos de espera prolongados o saturación de ancho de banda.
+## 3. Requisitos No Funcionales (RNF)
+* **RNF-01 (Seguridad e Integridad Experimental):** Ningún payload enviado al cliente antes de `POST /api/sessions/{id}/decision` debe contener la respuesta correcta del caso.
+* **RNF-02 (Disponibilidad y Tolerancia a Fallos):** El tiempo máximo de espera del Agente Tutor IA es de **10 segundos**; superado ese umbral, se activará una respuesta de respaldo (*fallback*).
+* **RNF-03 (Portabilidad y Despliegue):** El backend debe operar en Python 3.10+ con soporte para persistencia en memoria o MongoDB Atlas, y empaquetado mediante Docker.
+* **RNF-04 (Cumplimiento Ético):** La interfaz debe mostrar de forma visible la advertencia de uso exclusivamente académico y con datos sintéticos.
