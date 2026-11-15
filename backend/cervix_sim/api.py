@@ -25,7 +25,7 @@ from starlette.staticfiles import StaticFiles
 
 from . import __version__
 from .config import Settings
-from .domain.cases import load_cases
+from .domain.cases import load_bank
 from .domain.events import EventBus
 from .domain.factory import ScenarioFactory
 from .errors import AppError
@@ -51,6 +51,11 @@ class StartBody(BaseModel):
 class TutorBody(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     mensaje: Optional[str] = Field(default=None, max_length=500)
+
+
+class CommentBody(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    texto: str = Field(min_length=1, max_length=1000)
 
 
 class DecisionBody(BaseModel):
@@ -88,11 +93,11 @@ async def _body(request: Request, model, allow_empty: bool = False):
 def create_app(settings: Optional[Settings] = None, store: Optional[Store] = None) -> Starlette:
     settings = settings or Settings.from_env()
     store = store or build_store(settings)
-    cases = load_cases(settings.cases_file)
+    bank = load_bank(settings.cases_file)
     bus = EventBus()
     wire(bus, store)
     tutor = TutorClient.instance(settings)
-    service = SimulationService(store, bus, tutor, ScenarioFactory(cases), settings)
+    service = SimulationService(store, bus, tutor, ScenarioFactory(bank), settings)
 
     # ---- rutas ---------------------------------------------------------
     async def health(request: Request):
@@ -128,6 +133,13 @@ def create_app(settings: Optional[Settings] = None, store: Optional[Store] = Non
         b = await _body(request, SusBody)
         return _json(await run_in_threadpool(service.submit_sus, request.path_params["session_id"], b.respuestas), 201)
 
+    async def next_case(request: Request):
+        return _json(await run_in_threadpool(service.next_case, request.path_params["session_id"]))
+
+    async def comment(request: Request):
+        b = await _body(request, CommentBody)
+        return _json(await run_in_threadpool(service.submit_comment, request.path_params["session_id"], b.texto), 201)
+
     async def admin_summary(request: Request):
         if not settings.admin_token:
             raise AppError("ADMIN_DISABLED", "El panel docente está deshabilitado (falta ADMIN_TOKEN).", 403)
@@ -143,12 +155,14 @@ def create_app(settings: Optional[Settings] = None, store: Optional[Store] = Non
         Route("/api/sessions/{session_id}/scenario", scenario),
         Route("/api/sessions/{session_id}/tutor", ask_tutor, methods=["POST"]),
         Route("/api/sessions/{session_id}/decision", decide, methods=["POST"]),
+        Route("/api/sessions/{session_id}/next", next_case, methods=["POST"]),
         Route("/api/sessions/{session_id}/results", results),
         Route("/api/sessions/{session_id}/sus", sus, methods=["POST"]),
+        Route("/api/sessions/{session_id}/comment", comment, methods=["POST"]),
         Route("/api/admin/summary", admin_summary),
     ]
-    if Path(settings.cases_images_dir).is_dir():
-        routes.append(Mount("/static/cases", StaticFiles(directory=settings.cases_images_dir), name="cases"))
+    if Path(settings.models_dir).is_dir():
+        routes.append(Mount("/static/models", StaticFiles(directory=settings.models_dir), name="models"))
     if settings.frontend_dir and Path(settings.frontend_dir).is_dir():
         routes.append(Mount("/", StaticFiles(directory=settings.frontend_dir, html=True), name="frontend"))
 
@@ -174,8 +188,8 @@ def create_app(settings: Optional[Settings] = None, store: Optional[Store] = Non
             response.headers["Cache-Control"] = "no-store"
         else:
             response.headers["Content-Security-Policy"] = (
-                "default-src 'self'; img-src 'self' data:; style-src 'self' https://fonts.googleapis.com; "
-                "font-src https://fonts.gstatic.com; script-src 'self'; base-uri 'none'; frame-ancestors 'none'")
+                "default-src 'self'; img-src 'self' data: blob:; style-src 'self' https://fonts.googleapis.com; "
+                "font-src https://fonts.gstatic.com; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self' blob: data:; base-uri 'none'; frame-ancestors 'none'")
         return response
 
     from starlette.middleware.base import BaseHTTPMiddleware

@@ -23,7 +23,7 @@ def free_port() -> int:
 class LiveServer:
     def __init__(self, **overrides):
         TutorClient.reset()
-        base = dict(tutor_mode="mock", admin_token="secreto-de-prueba", frontend_dir="", inexact_every=3,
+        base = dict(tutor_mode="mock", admin_token="secreto-de-prueba", frontend_dir="",
                     tutor_max_requests=3)
         base.update(overrides)
         self.settings = Settings(**base)
@@ -52,9 +52,13 @@ class LiveServer:
                                      headers={"Content-Type": "application/json", **(headers or {})})
         try:
             with urllib.request.urlopen(req, timeout=10) as r:
-                return r.status, self._parse(r.read().decode()), self._headers(r.headers)
+                return r.status, self._parse(r.read().decode(errors="replace")), self._headers(r.headers)
         except urllib.error.HTTPError as e:
             return e.code, self._parse(e.read().decode()), self._headers(e.headers)
+
+    def call_raw(self, method, path):
+        with urllib.request.urlopen(f"http://127.0.0.1:{self.port}{path}", timeout=10) as r:
+            return r.read()
 
     @staticmethod
     def _parse(text):

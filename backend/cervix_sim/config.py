@@ -40,11 +40,9 @@ class Settings:
     ollama_model: str = "llama3"
     tutor_timeout: float = 10.0
     tutor_max_requests: int = 10
-    # Una de cada N sesiones recibe una sugerencia inexacta (control de AOR). 0 = nunca.
-    inexact_every: int = 3
     frontend_dir: str = ""
     cases_file: str = str(PKG_DIR / "data" / "cases.json")
-    cases_images_dir: str = str(PKG_DIR / "static_cases")
+    models_dir: str = str(PKG_DIR / "static_models")
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -62,6 +60,5 @@ class Settings:
             ollama_model=os.environ.get("OLLAMA_MODEL", "llama3"),
             tutor_timeout=_float("TUTOR_TIMEOUT", 10.0),
             tutor_max_requests=_int("TUTOR_MAX_REQUESTS", 10),
-            inexact_every=_int("INEXACT_EVERY", 3),
             frontend_dir=os.environ.get("FRONTEND_DIR", str(default_front) if default_front.is_dir() else ""),
         )
