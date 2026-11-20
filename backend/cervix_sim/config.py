@@ -34,8 +34,11 @@ class Settings:
     # Si mongodb_uri está vacío se usa el almacén en memoria (solo desarrollo).
     mongodb_uri: str = ""
     mongodb_db: str = "cervix_sim"
-    # auto | ollama | mock
+    # auto (Gemini si hay clave; si no, Ollama) | gemini | ollama | mock
     tutor_mode: str = "auto"
+    gemini_api_key: str = ""          # secreto: solo variable de entorno, nunca en el repositorio
+    gemini_model: str = "gemini-3.8-flash"
+    gemini_base_url: str = "https://generativelanguage.googleapis.com"
     ollama_url: str = "http://localhost:11434"
     ollama_model: str = "llama3"
     tutor_timeout: float = 10.0
@@ -58,6 +61,9 @@ class Settings:
             tutor_mode=os.environ.get("TUTOR_MODE", "auto").lower(),
             ollama_url=os.environ.get("OLLAMA_URL", "http://localhost:11434").rstrip("/"),
             ollama_model=os.environ.get("OLLAMA_MODEL", "llama3"),
+            gemini_api_key=os.environ.get("GEMINI_API_KEY", "").strip(),
+            gemini_model=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash").strip(),
+            gemini_base_url=os.environ.get("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com").rstrip("/"),
             tutor_timeout=_float("TUTOR_TIMEOUT", 10.0),
             tutor_max_requests=_int("TUTOR_MAX_REQUESTS", 10),
             frontend_dir=os.environ.get("FRONTEND_DIR", str(default_front) if default_front.is_dir() else ""),
