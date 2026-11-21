@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+node_modules/
+e2e/screenshots/
+*.log
+.DS_Store
+.idea/
+.vscode/

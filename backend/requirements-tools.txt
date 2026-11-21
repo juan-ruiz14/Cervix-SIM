@@ -1,0 +1,2 @@
+# Opcional: herramientas de administración del banco de casos (UC-06, UC-08)
+pillow>=10.0
