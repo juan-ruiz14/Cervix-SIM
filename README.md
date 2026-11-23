@@ -50,7 +50,7 @@ node e2e/run_e2e.mjs                                      # extremo a extremo (r
 ```
 
 ## API
-`GET /api/health`, `GET /api/legal`, `POST /api/sessions`, `GET /api/sessions/{id}/scenario`, `POST /api/sessions/{id}/tutor`, `POST /api/sessions/{id}/decision`, `POST /api/sessions/{id}/next`, `POST /api/sessions/{id}/comment`, `GET /api/sessions/{id}/results`, `POST /api/sessions/{id}/sus`, `GET /api/admin/summary` (cabecera `X-Admin-Token`).
+`GET /api/health`, `GET /api/legal`, `POST /api/sessions`, `GET /api/sessions/{id}/scenario`, `POST /api/sessions/{id}/tutor`, `POST /api/sessions/{id}/decision`, `GET /api/sessions/{id}/results`, `POST /api/sessions/{id}/sus`, `GET /api/admin/summary` (cabecera `X-Admin-Token`).
 
 ## Despliegue gratuito
 - Backend: Render (comando `cd backend && python -m cervix_sim`, `HOST=0.0.0.0`), base en MongoDB Atlas free.

@@ -1,0 +1,9 @@
+{
+  "name": "cervix-sim-frontend",
+  "private": true,
+  "type": "module",
+  "description": "Frontend estático de Cérvix-SIM (JavaScript puro, sin paso de compilación)",
+  "scripts": {
+    "instalar-three": "npm install three@0.160.0 --no-save && node tools/instalar_three.mjs"
+  }
+}

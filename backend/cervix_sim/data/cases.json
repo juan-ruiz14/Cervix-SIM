@@ -1,0 +1,123 @@
+{
+  "version": "0.2.0",
+  "nota": "Modelos 3D sintéticos con fines didácticos. Las referencias, justificaciones y el veredicto del tutor por caso deben ser validados por el docente antes de usarse en evaluaciones.",
+  "secuencias": {
+    "basico": [
+      "CS-001",
+      "CS-003",
+      "CS-004"
+    ],
+    "intermedio": [
+      "CS-004",
+      "CS-003",
+      "CS-001"
+    ],
+    "avanzado": [
+      "CS-009",
+      "CS-007",
+      "CS-004"
+    ]
+  },
+  "cases": [
+    {
+      "id": "CS-001",
+      "title": "Modelo cervical 3D · caso 001",
+      "modality": "Modelo 3D",
+      "model": "CS-001.glb",
+      "reference": "NORMAL",
+      "ia_veredicto": "NORMAL",
+      "ia_condicion": "calibrada",
+      "findings": [
+        "La superficie del modelo se ve uniforme, sin zonas de color o textura que destaquen.",
+        "No hay áreas elevadas ni irregularidades localizadas al girar el modelo.",
+        "Los bordes de las zonas visibles son regulares."
+      ],
+      "rationale": "No hay un área localizada que contraste con el resto y la superficie se ve uniforme: la referencia es «sin lesión».",
+      "source": "Modelo 3D elaborado por el equipo de Cérvix-SIM (sin datos de pacientes)",
+      "license": "Uso académico, creación propia",
+      "anonymized": true,
+      "synthetic": true,
+      "version": "0.2.0"
+    },
+    {
+      "id": "CS-003",
+      "title": "Modelo cervical 3D · caso 003",
+      "modality": "Modelo 3D",
+      "model": "CS-003.glb",
+      "reference": "HSIL",
+      "ia_veredicto": "HSIL",
+      "ia_condicion": "calibrada",
+      "findings": [
+        "Hay un área bien delimitada que contrasta con el resto de la superficie.",
+        "La zona afectada es extensa y de bordes irregulares.",
+        "Al girar el modelo, la alteración se mantiene visible desde varios ángulos."
+      ],
+      "rationale": "Se observa un área extensa y bien delimitada que contrasta con el tejido vecino: la referencia es «lesión de alto grado (HSIL)».",
+      "source": "Modelo 3D elaborado por el equipo de Cérvix-SIM (sin datos de pacientes)",
+      "license": "Uso académico, creación propia",
+      "anonymized": true,
+      "synthetic": true,
+      "version": "0.2.0"
+    },
+    {
+      "id": "CS-004",
+      "title": "Modelo cervical 3D · caso 004",
+      "modality": "Modelo 3D",
+      "model": "CS-004.glb",
+      "reference": "NORMAL",
+      "ia_veredicto": "LSIL",
+      "ia_condicion": "inexacta",
+      "findings": [
+        "La superficie del modelo se ve uniforme, sin zonas de color o textura que destaquen.",
+        "No hay áreas elevadas ni irregularidades localizadas al girar el modelo.",
+        "Los bordes de las zonas visibles son regulares."
+      ],
+      "rationale": "No hay una alteración localizada que justifique una lesión. El tutor sugirió «bajo grado (LSIL)» al interpretar como lesión una variación leve de la textura; la referencia es «sin lesión».",
+      "source": "Modelo 3D elaborado por el equipo de Cérvix-SIM (sin datos de pacientes)",
+      "license": "Uso académico, creación propia",
+      "anonymized": true,
+      "synthetic": true,
+      "version": "0.2.0"
+    },
+    {
+      "id": "CS-007",
+      "title": "Modelo cervical 3D · caso 007",
+      "modality": "Modelo 3D",
+      "model": "CS-007.glb",
+      "reference": "NORMAL",
+      "ia_veredicto": "NORMAL",
+      "ia_condicion": "calibrada",
+      "findings": [
+        "La superficie del modelo se ve uniforme, sin zonas de color o textura que destaquen.",
+        "No hay áreas elevadas ni irregularidades localizadas al girar el modelo.",
+        "Los bordes de las zonas visibles son regulares."
+      ],
+      "rationale": "La superficie es uniforme y sin áreas de contraste localizadas: la referencia es «sin lesión».",
+      "source": "Modelo 3D elaborado por el equipo de Cérvix-SIM (sin datos de pacientes)",
+      "license": "Uso académico, creación propia",
+      "anonymized": true,
+      "synthetic": true,
+      "version": "0.2.0"
+    },
+    {
+      "id": "CS-009",
+      "title": "Modelo cervical 3D · caso 009",
+      "modality": "Modelo 3D",
+      "model": "CS-009.glb",
+      "reference": "HSIL",
+      "ia_veredicto": "HSIL",
+      "ia_condicion": "calibrada",
+      "findings": [
+        "Hay un área bien delimitada que contrasta con el resto de la superficie.",
+        "La zona afectada es extensa y de bordes irregulares.",
+        "Al girar el modelo, la alteración se mantiene visible desde varios ángulos."
+      ],
+      "rationale": "El área alterada es extensa y de bordes irregulares, visible desde varios ángulos: la referencia es «lesión de alto grado (HSIL)».",
+      "source": "Modelo 3D elaborado por el equipo de Cérvix-SIM (sin datos de pacientes)",
+      "license": "Uso académico, creación propia",
+      "anonymized": true,
+      "synthetic": true,
+      "version": "0.2.0"
+    }
+  ]
+}

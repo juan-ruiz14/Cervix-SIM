@@ -1,0 +1,4 @@
+# Dependencias de ejecución del backend
+starlette>=0.40
+uvicorn>=0.30
+pydantic>=2.6
