@@ -55,7 +55,9 @@ class TutorClient:
 
     def __init__(self, mode: str, ollama_url: str, model: str, timeout: float, *,
                  gemini_key: str = "", gemini_model: str = "gemini-3.8-flash",
-                 gemini_base_url: str = "https://generativelanguage.googleapis.com") -> None:
+                 gemini_base_url: str = "https://generativelanguage.googleapis.com",
+                 gemini_fallback_model: str = "", gemini_retries: int = 2,
+                 gemini_retry_delay: float = 0.8) -> None:
         self.mode = mode
         self.ollama_url = ollama_url
         self.model = model
@@ -63,6 +65,9 @@ class TutorClient:
         self.gemini_key = gemini_key
         self.gemini_model = gemini_model
         self.gemini_base_url = gemini_base_url.rstrip("/")
+        self.gemini_fallback_model = gemini_fallback_model
+        self.gemini_retries = max(0, gemini_retries)
+        self.gemini_retry_delay = max(0.0, gemini_retry_delay)
 
     @classmethod
     def instance(cls, settings) -> "TutorClient":
@@ -71,7 +76,10 @@ class TutorClient:
                 cls._instance = cls(settings.tutor_mode, settings.ollama_url, settings.ollama_model,
                                     settings.tutor_timeout, gemini_key=settings.gemini_api_key,
                                     gemini_model=settings.gemini_model,
-                                    gemini_base_url=settings.gemini_base_url)
+                                    gemini_base_url=settings.gemini_base_url,
+                                    gemini_fallback_model=settings.gemini_fallback_model,
+                                    gemini_retries=settings.gemini_retries,
+                                    gemini_retry_delay=settings.gemini_retry_delay)
             return cls._instance
 
     @classmethod
@@ -119,10 +127,10 @@ class TutorClient:
             prompt += f"Consulta del estudiante: {message[:500]}\n"
         return prompt
 
-    def _post_json(self, url: str, payload: dict, headers: dict) -> dict:
+    def _post_json(self, url: str, payload: dict, headers: dict, timeout: Optional[float] = None) -> dict:
         req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"),
                                      headers={"Content-Type": "application/json", **headers}, method="POST")
-        with urllib.request.urlopen(req, timeout=self.timeout) as resp:  # noqa: S310 - URL configurada por el equipo
+        with urllib.request.urlopen(req, timeout=timeout or self.timeout) as resp:  # noqa: S310 - URL configurada por el equipo
             return json.loads(resp.read().decode("utf-8"))
 
     def _ask_ollama(self, prompt: str) -> str:
@@ -134,14 +142,44 @@ class TutorClient:
             raise ValueError("Respuesta vacía del modelo")
         return text[:1200]
 
+    # Errores transitorios de Google (saturación, cuota por minuto, red): conviene reintentar.
+    _TRANSIENT_HTTP = {429, 500, 502, 503, 504}
+
     def _ask_gemini(self, prompt: str) -> str:
         if not self.gemini_key:
             raise ValueError("Falta GEMINI_API_KEY")
-        url = f"{self.gemini_base_url}/v1beta/models/{self.gemini_model}:generateContent"
+        models = [self.gemini_model]
+        if self.gemini_fallback_model and self.gemini_fallback_model != self.gemini_model:
+            models.append(self.gemini_fallback_model)
+        deadline = time.monotonic() + self.timeout * 2  # presupuesto total; el estudiante no espera más
+        last: Exception = RuntimeError("Gemini sin intentos")
+        for model in models:
+            for attempt in range(self.gemini_retries + 1):
+                remaining = deadline - time.monotonic()
+                if remaining <= 0.5:
+                    raise last
+                try:
+                    return self._gemini_once(model, prompt, min(self.timeout, remaining))
+                except urllib.error.HTTPError as exc:
+                    last = exc
+                    transient = exc.code in self._TRANSIENT_HTTP
+                except (urllib.error.URLError, TimeoutError, OSError) as exc:
+                    last, transient = exc, True
+                except ValueError as exc:  # respuesta vacía o bloqueada: otro modelo puede responder
+                    last, transient = exc, False
+                log.info("Gemini %s intento %d falló: %s", model, attempt + 1, last)
+                if not transient:
+                    break  # 400/401/403/404 o vacío: reintentar el mismo modelo no sirve
+                if attempt < self.gemini_retries:
+                    time.sleep(min(self.gemini_retry_delay * (attempt + 1), max(0.0, deadline - time.monotonic())))
+        raise last
+
+    def _gemini_once(self, model: str, prompt: str, timeout: float) -> str:
+        url = f"{self.gemini_base_url}/v1beta/models/{model}:generateContent"
         data = self._post_json(url, {
             "contents": [{"role": "user", "parts": [{"text": prompt}]}],
             "generationConfig": {"temperature": 0.4, "maxOutputTokens": 800},
-        }, {"x-goog-api-key": self.gemini_key})
+        }, {"x-goog-api-key": self.gemini_key}, timeout)
         candidates = data.get("candidates") or []
         parts = (candidates[0].get("content") or {}).get("parts") or [] if candidates else []
         text = "".join(p.get("text", "") for p in parts if isinstance(p, dict)).strip()
