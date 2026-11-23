@@ -29,7 +29,7 @@ TUTOR_MODE=mock python -m cervix_sim     # http://127.0.0.1:8000
 ```
 La misma aplicación sirve el frontend. Variables en `.env.example` (`MONGODB_URI`, `TUTOR_MODE=auto|ollama|mock`, `OLLAMA_URL`, `ADMIN_TOKEN`, `ALLOWED_ORIGINS`...). Sin `MONGODB_URI` los datos se guardan en memoria (se pierden al reiniciar).
 
-Tutor real con Gemini: crea una clave en Google AI Studio y define `GEMINI_API_KEY` (y `TUTOR_MODE=gemini` o `auto`). Alternativa local: [Ollama](https://ollama.com), `ollama pull llama3` y `TUTOR_MODE=ollama`. Si el proveedor falla o tarda más de 10 s se muestra un texto de respaldo. Guía completa: `docs/guia_ia_gemini.md`.
+Tutor real con Gemini: crea una clave en Google AI Studio y define `GEMINI_API_KEY` (y `TUTOR_MODE=gemini` o `auto`). Alternativa local: [Ollama](https://ollama.com), `ollama pull llama3` y `TUTOR_MODE=ollama`. Si Gemini responde 503/429 se reintenta (`GEMINI_RETRIES`) y, si se define `GEMINI_FALLBACK_MODEL`, se prueba ese modelo; si todo falla o tarda se muestra un texto de respaldo. Guía completa: `docs/guia_ia_gemini.md`.
 
 ## Visor 3D (una sola vez)
 Los 5 modelos `.glb` viven en `backend/cervix_sim/static_models/`. El visor usa three.js servido desde el propio proyecto:

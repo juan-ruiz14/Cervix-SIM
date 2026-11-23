@@ -39,6 +39,9 @@ class Settings:
     gemini_api_key: str = ""          # secreto: solo variable de entorno, nunca en el repositorio
     gemini_model: str = "gemini-3.8-flash"
     gemini_base_url: str = "https://generativelanguage.googleapis.com"
+    gemini_fallback_model: str = ""   # modelo alterno si el principal está saturado (opcional)
+    gemini_retries: int = 2           # reintentos ante 429/5xx/tiempo agotado
+    gemini_retry_delay: float = 0.8
     ollama_url: str = "http://localhost:11434"
     ollama_model: str = "llama3"
     tutor_timeout: float = 10.0
@@ -64,6 +67,9 @@ class Settings:
             gemini_api_key=os.environ.get("GEMINI_API_KEY", "").strip(),
             gemini_model=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash").strip(),
             gemini_base_url=os.environ.get("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com").rstrip("/"),
+            gemini_fallback_model=os.environ.get("GEMINI_FALLBACK_MODEL", "").strip(),
+            gemini_retries=_int("GEMINI_RETRIES", 2),
+            gemini_retry_delay=_float("GEMINI_RETRY_DELAY", 0.8),
             tutor_timeout=_float("TUTOR_TIMEOUT", 10.0),
             tutor_max_requests=_int("TUTOR_MAX_REQUESTS", 10),
             frontend_dir=os.environ.get("FRONTEND_DIR", str(default_front) if default_front.is_dir() else ""),

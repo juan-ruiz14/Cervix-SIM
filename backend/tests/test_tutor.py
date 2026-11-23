@@ -61,7 +61,8 @@ def fake_gemini(reply: dict, status: int = 200):
 
 def gemini_settings(port, **kw):
     return Settings(gemini_api_key=kw.pop("key", "CLAVE-SECRETA"), gemini_model="modelo-x",
-                    gemini_base_url=f"http://127.0.0.1:{port}", **kw)
+                    gemini_base_url=f"http://127.0.0.1:{port}",
+                    gemini_retry_delay=kw.pop("gemini_retry_delay", 0.0), **kw)
 
 
 class TutorTests(unittest.TestCase):
@@ -172,6 +173,76 @@ class TutorTests(unittest.TestCase):
                 srv.server_close()
             self.assertEqual((r.source, r.text), ("respaldo", fallback_text("HSIL")), (status, reply))
             self.assertNotIn("CLAVE-SECRETA", "".join(logs.output))
+
+    def test_gemini_503_se_reintenta_y_luego_responde(self):
+        TutorClient.reset()
+        seen, estados = [], [503, 503, 200]
+
+        class H(BaseHTTPRequestHandler):
+            def do_POST(self):
+                self.rfile.read(int(self.headers["Content-Length"]))
+                seen.append(self.path)
+                st = estados.pop(0)
+                payload = json.dumps({"candidates": [{"content": {"parts": [{"text": "Listo"}]}}]} if st == 200 else {}).encode()
+                self.send_response(st)
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+
+            def log_message(self, *a):
+                pass
+
+        port = free_port()
+        srv = HTTPServer(("127.0.0.1", port), H)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        try:
+            r = TutorClient.instance(gemini_settings(port, tutor_mode="gemini")).suggest("C", "basico", "HSIL")
+        finally:
+            srv.shutdown()
+            srv.server_close()
+        self.assertEqual((r.text, r.source), ("Listo", "gemini"))
+        self.assertEqual(len(seen), 3)
+
+    def test_gemini_503_persistente_prueba_modelo_alterno(self):
+        TutorClient.reset()
+        seen = []
+
+        class H(BaseHTTPRequestHandler):
+            def do_POST(self):
+                self.rfile.read(int(self.headers["Content-Length"]))
+                seen.append(self.path)
+                ok = "alterno" in self.path
+                payload = json.dumps({"candidates": [{"content": {"parts": [{"text": "Del alterno"}]}}]} if ok else {}).encode()
+                self.send_response(200 if ok else 503)
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+
+            def log_message(self, *a):
+                pass
+
+        port = free_port()
+        srv = HTTPServer(("127.0.0.1", port), H)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        try:
+            r = TutorClient.instance(gemini_settings(port, tutor_mode="gemini",
+                                                     gemini_fallback_model="alterno")).suggest("C", "basico", "HSIL")
+        finally:
+            srv.shutdown()
+            srv.server_close()
+        self.assertEqual((r.text, r.source), ("Del alterno", "gemini"))
+        self.assertEqual(len(seen), 4)  # 3 intentos con el principal + 1 con el alterno
+
+    def test_gemini_clave_invalida_no_reintenta(self):
+        TutorClient.reset()
+        srv, port, seen = fake_gemini({"error": {"message": "API key not valid"}}, 400)
+        try:
+            r = TutorClient.instance(gemini_settings(port, tutor_mode="gemini")).suggest("C", "basico", "HSIL")
+        finally:
+            srv.shutdown()
+            srv.server_close()
+        self.assertEqual(r.source, "respaldo")
+        self.assertEqual(len(seen), 1)
 
 
 if __name__ == "__main__":
